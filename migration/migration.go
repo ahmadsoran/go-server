@@ -6,6 +6,7 @@ import (
 )
 
 func Migration() {
-	// Migrate the schema
-	conf.DB.AutoMigrate(&models.User{})
+	// Migrate schemas to database
+	models := []interface{}{&models.Task{}, &models.User{}}
+	conf.DB.AutoMigrate(models...)
 }
