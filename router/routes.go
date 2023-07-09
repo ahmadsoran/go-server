@@ -20,6 +20,7 @@ func Routes(r *gin.Engine) {
 	r.DELETE("/todo/:id", todo.Delete)
 	r.GET("/todo", todo.GetAll)
 	r.GET("/todo/:id", todo.GetOne)
+	r.GET("/todo/list", todo.List)
 	// End Todo ///
 
 }
