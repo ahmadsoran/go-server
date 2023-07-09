@@ -14,13 +14,22 @@ func Routes(r *gin.Engine) {
 	/// End Auth ///
 	// auth middleware
 	r.Use(auth.AuthMiddleware())
-	/// Todo ///
-	r.POST("/todo", todo.Create)
-	r.PUT("/todo/:id", todo.Update)
-	r.DELETE("/todo/:id", todo.Delete)
-	r.GET("/todo", todo.GetAll)
-	r.GET("/todo/:id", todo.GetOne)
-	r.GET("/todo/list", todo.List)
-	// End Todo ///
+
+	v1 := r.Group("/v1")
+	{
+		/// Todo ///
+		v1.POST("/todo", todo.Create)
+		v1.PUT("/todo/:id", todo.Update)
+		v1.DELETE("/todo/:id", todo.Delete)
+		v1.GET("/todo", todo.GetAll)
+		v1.GET("/todo/:id", todo.GetOne)
+		v1.GET("/todo/list", todo.List)
+		// End Todo ///
+	}
+
+	v2 := r.Group("/v2")
+	{
+		v2.GET("/todo/list", todo.List)
+	}
 
 }
