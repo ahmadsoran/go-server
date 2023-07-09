@@ -10,15 +10,28 @@ import (
 )
 
 func Create(c *gin.Context) {
-	Task := models.Task{}
-	err := c.BindJSON(&Task)
+	task := models.Task{}
+
+	userID, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	task.UserID = uint(userID.(float64))
+	task.Status = "pending"
+
+	err := c.Bind(&task)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
 		return
 	}
-	res := conf.DB.Create(&Task)
+
+	res := conf.DB.Create(&task)
 	if res.Error != nil {
 		c.JSON(500, gin.H{
 			"message": "Internal Server Error",
@@ -27,7 +40,7 @@ func Create(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data":    Task,
+		"data":    task,
 	})
 
 }
@@ -35,8 +48,13 @@ func Create(c *gin.Context) {
 func Update(c *gin.Context) {
 	id := c.Param("id")
 	var task models.Task
-
-	c.BindJSON(&task)
+	errBind := c.Bind(&task)
+	if errBind != nil {
+		c.JSON(400, gin.H{
+			"message": errBind.Error(),
+		})
+		return
+	}
 
 	err := conf.DB.First(&task, id).Error
 	if err != nil {
@@ -54,15 +72,15 @@ func Update(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
-	Task := models.Task{}
-	err := c.BindJSON(&Task)
+	task := models.Task{}
+	err := c.BindJSON(&task)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
 		return
 	}
-	res := conf.DB.Delete(&Task)
+	res := conf.DB.Delete(&task)
 	if res.Error != nil {
 		c.JSON(500, gin.H{
 			"message": "Internal Server Error",
@@ -71,14 +89,14 @@ func Delete(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data":    &Task,
+		"data":    &task,
 	})
 
 }
 
 func GetAll(c *gin.Context) {
-	Task := []models.Task{}
-	res := conf.DB.Find(&Task)
+	task := []models.Task{}
+	res := conf.DB.Find(&task)
 	if res.Error != nil {
 		c.JSON(500, gin.H{
 			"message": "Internal Server Error",
@@ -87,16 +105,17 @@ func GetAll(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data":    Task,
+		"data":    task,
 	})
 
 }
 
 func GetOne(c *gin.Context) {
-	Task := models.Task{}
-	res := conf.DB.First(&Task, c.Param("id")).Preload("User", func(db *gorm.DB) *gorm.DB {
-		return db.Select("username , id")
-	}).Find(&Task)
+	task := models.Task{}
+	res := conf.DB.First(&task, c.Param("id")).Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id, username")
+	}).Find(&task)
+
 	if res.Error != nil {
 		// if error not found
 		c.JSON(404, gin.H{
@@ -106,7 +125,7 @@ func GetOne(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"message": "Success",
-		"data":    Task,
+		"data":    task,
 	})
 
 }

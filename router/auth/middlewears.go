@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -29,6 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		if !isVerified.Valid {
 			c.JSON(401, gin.H{
 				"message": "Unauthorized",
@@ -36,7 +38,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
+		user := isVerified.Claims.(jwt.MapClaims)
+		id := user["id"].(float64)
+		c.Set("user_id", id)
 		c.Next()
 	}
 }
